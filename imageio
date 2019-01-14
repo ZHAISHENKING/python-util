@@ -1,0 +1,45 @@
+# coding=UTF-8
+from PIL import Image, ImageFont, ImageDraw
+import requests
+from io import BytesIO
+import os, random, string
+import qrcode
+import base64
+
+# def get_image_from_url(url):
+#     response = requests.get(url)
+#     img = Image.open(BytesIO(response.content))
+#     return img
+
+
+def gernerate_poster(face_url, staff_id):
+    template_dir = "/home/ubuntu/ultrabear-activity/util/template.png"
+    code_url = "https://wx.ultrabear.com.cn/activefree?id=" + staff_id+"&utm_source=vppartner&utm_medium=snsposter&utm_campaign=1299class"
+    face_w = 150
+    face_x = 100
+    face_y = 190
+    code_w = 150
+    code_x = 305
+    code_y = 650
+    name_color = (255, 0, 132, 255)
+    name_font_size = 75
+    name_x = 170
+    name_y = 756
+
+    template = Image.open(template_dir)
+    response = requests.get(face_url)
+    face = Image.open(BytesIO(response.content))
+
+    face.thumbnail((face_w, face_w))
+
+    code = qrcode.make(code_url)
+    code.thumbnail((code_w, code_w))
+
+    layer = Image.new('RGBA', template.size, (0, 0, 0, 0))
+
+    layer.paste(face, (face_x, face_y))
+    layer.paste(code, (code_x, code_y))
+    out = Image.composite(layer, template, layer)
+    path = "/data/static/homework/temp_%s.jpg" % staff_id
+    out.save(path, "jpeg")
+    return path
